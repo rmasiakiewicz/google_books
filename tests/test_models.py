@@ -25,6 +25,7 @@ class ModelsTestCase(unittest.TestCase):
         db.session.commit()
         book = Book(
             title="abcd",
+            gid="abc",
             publication_date=datetime.datetime.utcnow(),
             number_of_pages=100,
             language_id=language.id,
@@ -50,6 +51,7 @@ class ModelsTestCase(unittest.TestCase):
         db.session.commit()
         book = Book(
             title="abcd",
+            gid="abc",
             publication_date=datetime.datetime.utcnow(),
             number_of_pages=100,
             language_id=language.id,
@@ -69,6 +71,7 @@ class ModelsTestCase(unittest.TestCase):
         db.session.commit()
         book1 = Book(
             title="abcd",
+            gid="abc",
             publication_date=datetime.datetime.utcnow(),
             number_of_pages=100,
             language_id=language.id,
@@ -76,6 +79,7 @@ class ModelsTestCase(unittest.TestCase):
         )
         book2 = Book(
             title="ddddd",
+            gid="dba",
             publication_date=datetime.datetime.utcnow(),
             number_of_pages=100,
             language_id=language.id,
