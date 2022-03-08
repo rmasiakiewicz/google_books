@@ -5,7 +5,7 @@ from flask_sqlalchemy import SQLAlchemy
 from config import config
 
 db = SQLAlchemy()
-migrate = Migrate()
+migrate = Migrate(compare_type=True)
 
 from app import models
 

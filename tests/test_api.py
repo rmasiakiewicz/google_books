@@ -4,7 +4,6 @@ from app import create_app, db
 
 
 class ApiTestCase(unittest.TestCase):
-
     def setUp(self) -> None:
         self.app = create_app("testing")
         self.app_context = self.app.app_context()
@@ -18,5 +17,5 @@ class ApiTestCase(unittest.TestCase):
         self.app_context.pop()
 
     def test_import_books(self):
-        response = self.client.post('/books/import', data={"q": "tolkien"})
-        self.assertEqual(response.status_code, 200)
+        response = self.client.post("/books/import", data={"q": "t"})
+        self.assertEqual(response.status_code, 302)
