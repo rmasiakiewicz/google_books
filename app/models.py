@@ -10,7 +10,7 @@ class Book(db.Model):
     publication_date = db.Column(db.DateTime, nullable=True)
     number_of_pages = db.Column(db.Integer, nullable=True)
     language = db.Column(db.String(10), nullable=False)
-    preview_link = db.Column(db.String(200), nullable=True)
+    image_link = db.Column(db.String(400), nullable=True)
     isbn_10 = db.Column(db.String(10), nullable=True, unique=True)
     isbn_13 = db.Column(db.String(13), nullable=True, unique=True)
 

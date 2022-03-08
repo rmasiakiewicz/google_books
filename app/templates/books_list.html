@@ -1,5 +1,72 @@
 {% extends "base.html" %}
 {% block title %}Books list{% endblock %}
 {% block content %}
-<h1>books list</h1>
+<form class="row row-cols-lg-auto" method="GET", action="{{ url_for('general.books_list') }}">
+  <div class="col-md-2 form-group">
+    <label class="visually-hidden">Title</label>
+    <input type="text" class="form-control" name="title" placeholder="Title">
+  </div>
+  <div class="col-md-2 form-group">
+    <label class="visually-hidden">Author</label>
+    <input type="text" class="form-control" name="author" placeholder="Author">
+  </div>
+  <div class="col-md-2 form-group">
+    <label class="visually-hidden">Language</label>
+    <input type="text" class="form-control" name="language" placeholder="Language">
+  </div>
+  <div class="col-12">
+    <button class="btn btn-secondary" type="submit">Filter</button>
+  </div>
+</form>
+<table class="table">
+  <thead>
+    <tr>
+      <th scope="col">gid</th>
+      <th scope="col">Title</th>
+      <th scope="col">Authors</th>
+      <th scope="col">Published</th>
+      <th scope="col">ISBN 10</th>
+      <th scope="col">ISBN 13</th>
+      <th scope="col">Page count</th>
+      <th scope="col">Language</th>
+      <th scope="col">Image link</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for book in books.items %}
+    <tr>
+      <td>{{ book.gid }}</td>
+      <td>{{ book.title }}</td>
+      <td>{{ authors_by_id.get(book.id) }}</td>
+      <td>{{ book.publication_date.strftime("%Y/%m/%d") if book.publication_date else "" }}</td>
+      <td>{{ book.isbn_10 if book.isbn_10 else "" }}</td>
+      <td>{{ book.isbn_13 if book.isbn_13 else "" }}</td>
+      <td>{{ book.number_of_pages if book.number_of_pages else "" }}</td>
+      <td>{{ book.language }}</td>
+      <td>
+          {% if book.image_link %}
+          <a target="_blank" href="{{ book.image_link }}">
+              Image
+          </a>
+          {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+<nav>
+  <ul class="pagination justify-content-center">
+    <li class="page-item {% if page_number==1 %}disabled{% endif %}">
+      <a class="page-link" href="{{ url_for('general.books_list', page=page_number-1) }}" aria-label="Previous">
+        <span aria-hidden="true">&laquo;</span>
+      </a>
+    </li>
+    <li class="page-item disabled"><a class="page-link" href="#">{{page_number}} out of {{last_page}}</a></li>
+    <li class="page-item {% if page_number==last_page %}disabled{% endif %}">
+      <a class="page-link" href="{{ url_for('general.books_list', page=page_number+1) }}" aria-label="Next">
+        <span aria-hidden="true">&raquo;</span>
+      </a>
+    </li>
+  </ul>
+</nav>
 {% endblock %}

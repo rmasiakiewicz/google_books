@@ -17,5 +17,9 @@ class ApiTestCase(unittest.TestCase):
         self.app_context.pop()
 
     def test_import_books(self):
-        response = self.client.post("/books/import", data={"q": "t"})
+        response = self.client.post("/books/import", data={"q": "tolkien"})
         self.assertEqual(response.status_code, 302)
+
+    def test_books_list(self):
+        response = self.client.get("/books")
+        self.assertEqual(response.status_code, 200)

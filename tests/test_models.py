@@ -1,7 +1,7 @@
 import datetime
 import unittest
 from app import create_app, db
-from app.models import Book, Author, Language
+from app.models import Book, Author
 
 
 class ModelsTestCase(unittest.TestCase):
@@ -17,9 +17,6 @@ class ModelsTestCase(unittest.TestCase):
         self.app_context.pop()
 
     def test_book_single_author(self):
-        language = Language(name="pl")
-        db.session.add(language)
-        db.session.commit()
         author = Author(name="Jan Kowalski")
         db.session.add(author)
         db.session.commit()
@@ -28,22 +25,19 @@ class ModelsTestCase(unittest.TestCase):
             gid="abc",
             publication_date=datetime.datetime.utcnow(),
             number_of_pages=100,
-            language_id=language.id,
+            language="pl",
             isbn_10="1111111111",
         )
         db.session.add(book)
         db.session.commit()
         book.authors.append(author)
-        self.assertEqual(book.language.name, "pl")
+        self.assertEqual(book.language, "pl")
         self.assertEqual(book.number_of_pages, 100)
         self.assertEqual(book.title, "abcd")
         self.assertEqual(book.isbn_10, "1111111111")
         self.assertListEqual(book.authors, [author])
 
     def test_book_multiple_authors(self):
-        language = Language(name="pl")
-        db.session.add(language)
-        db.session.commit()
         author1 = Author(name="Jan Kowalski")
         author2 = Author(name="Rafał Masiakiewicz")
         db.session.add(author1)
@@ -54,7 +48,7 @@ class ModelsTestCase(unittest.TestCase):
             gid="abc",
             publication_date=datetime.datetime.utcnow(),
             number_of_pages=100,
-            language_id=language.id,
+            language="pl",
             isbn_10="1111111111",
         )
         db.session.add(book)
@@ -63,9 +57,6 @@ class ModelsTestCase(unittest.TestCase):
         self.assertListEqual(book.authors, [author1, author2])
 
     def test_author_multiple_books(self):
-        language = Language(name="pl")
-        db.session.add(language)
-        db.session.commit()
         author = Author(name="Jan Kowalski")
         db.session.add(author)
         db.session.commit()
@@ -74,7 +65,7 @@ class ModelsTestCase(unittest.TestCase):
             gid="abc",
             publication_date=datetime.datetime.utcnow(),
             number_of_pages=100,
-            language_id=language.id,
+            language="pl",
             isbn_10="1111111111",
         )
         book2 = Book(
@@ -82,7 +73,7 @@ class ModelsTestCase(unittest.TestCase):
             gid="dba",
             publication_date=datetime.datetime.utcnow(),
             number_of_pages=100,
-            language_id=language.id,
+            language="pl",
             isbn_10="2222222222",
         )
         db.session.add(book1)

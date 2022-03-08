@@ -1,6 +1,9 @@
+import logging
+import math
 import os
 from http import HTTPStatus
 
+import flask
 from flask import Blueprint, request, render_template, redirect, url_for, flash
 
 from app import db
@@ -8,6 +11,7 @@ from app.models import Book, Author
 from app.utils import chunks, get_google_data
 
 blueprint = Blueprint("general", __name__)
+logging.basicConfig(level=logging.DEBUG)
 
 
 @blueprint.route("/health_check", methods=["GET"])
@@ -31,8 +35,20 @@ def books_list():
     language = request.args.get("language")
     from_date = request.args.get("from_date")
     to_date = request.args.get("to_date")
-    books = Book.query.all()
-    return render_template("books_list.html", books=books)
+    page = request.args.get("page", 1, int)
+    books = Book.query.paginate(page=page, per_page=20)
+    logging.info(books.pages)
+    authors_str_by_id = {}
+    for book in books.items:
+        authors_string = ", ".join([author.name for author in book.authors])
+        authors_str_by_id[book.id] = authors_string
+    return render_template(
+        "books_list.html",
+        books=books,
+        authors_by_id=authors_str_by_id,
+        page_number=page,
+        last_page=books.pages,
+    )
 
 
 @blueprint.route("/books/add", methods=["POST"])
@@ -52,8 +68,15 @@ def import_books():
     new_books, new_authors, book_authors_by_gid, total_items = get_google_data(
         query, 0, already_imported_books_gid, authors_by_name
     )
+    logging.info(
+        "Found {} items, there should be around {} pages".format(
+            total_items, math.ceil(total_items / 40)
+        )
+    )
+    logging.info("Page 1 done, scraped books {}".format(len(new_books)))
     total_items -= 40
     pagination_index = 40
+    page = 2
     while total_items > 0:
         (
             next_page_new_books,
@@ -65,9 +88,13 @@ def import_books():
         )
         new_books.extend(next_page_new_books)
         new_authors.extend(next_page_new_authors)
+        logging.info(
+            "Page {} done, scraped books {}".format(page, len(next_page_new_books))
+        )
         book_authors_by_gid.update(next_page_book_authors_by_gid)
         total_items -= 40
         pagination_index += 40
+        page += 1
     for rows_chunk in chunks(new_books + new_authors, 500):
         db.session.add_all(rows_chunk)
         db.session.commit()
@@ -75,5 +102,7 @@ def import_books():
     for gid, authors in book_authors_by_gid.items():
         book = new_books_by_gid.get(gid)
         book.authors.extend(authors)
+    db.session.commit()
+    logging.info("Imported {} new books".format(len(new_books)))
     flash("New books have been imported", "success")
     return redirect(url_for("general.books_list"))

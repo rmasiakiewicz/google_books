@@ -68,13 +68,16 @@ def parse_google_json(
                 isbn_10 = industry_identifier.get("identifier")
             elif industry_identifier.get("type") == "ISBN_13":
                 isbn_13 = industry_identifier.get("identifier")
+        image_link = item.get("imageLinks", {}).get("thumbnail") or item.get(
+            "imageLinks", {}
+        ).get("smallThumbnail")
         book = Book(
             gid=gid,
             title=title,
             publication_date=publication_date,
             number_of_pages=item.get("pageCount"),
             language=language,
-            preview_link=item.get("previewLink"),
+            image_link=image_link,
             isbn_10=isbn_10,
             isbn_13=isbn_13,
         )
