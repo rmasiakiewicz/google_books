@@ -1,3 +1,4 @@
+import datetime
 import json
 import re
 import urllib.parse
@@ -93,3 +94,42 @@ def parse_google_json(
         book_authors_by_gid[book.gid] = book_authors
         imported_gid.append(book.gid)
     return new_books, new_authors, book_authors_by_gid
+
+
+def build_query(query_dict):
+    allowed_parameters = ["title", "author", "language", "from_date", "to_date"]
+    builder = Book.query
+    for key in query_dict:
+        if key not in allowed_parameters:
+            continue
+        value = query_dict.get(key)
+        if value == "":
+            continue
+        if key == "author":
+            builder = builder.join(Book.authors).filter(
+                Author.name.ilike("%" + value + "%")
+            )
+            continue
+        if key == "from_date":
+            from_date = check_date(value)
+            if from_date is None:
+                return None
+            builder = builder.filter(Book.publication_date >= from_date)
+            continue
+        if key == "to_date":
+            to_date = check_date(value)
+            if to_date is None:
+                return None
+            builder = builder.filter(Book.publication_date <= to_date)
+            continue
+        builder = builder.filter(getattr(Book, key).ilike("%" + value + "%"))
+    return builder
+
+
+def check_date(raw_date: str) -> Optional[datetime.date]:
+    if re.search(r"^\d{4}/\d{1,2}/\d{1,2}$", raw_date) is None:
+        return None
+    try:
+        return datetime.strptime(raw_date, "%Y/%m/%d")
+    except ValueError:
+        return None

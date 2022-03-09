@@ -4,15 +4,23 @@
 <form class="row row-cols-lg-auto" method="GET", action="{{ url_for('general.books_list') }}">
   <div class="col-md-2 form-group">
     <label class="visually-hidden">Title</label>
-    <input type="text" class="form-control" name="title" placeholder="Title">
+    <input type="text" class="form-control" name="title" placeholder="Title" value="{{title}}">
   </div>
   <div class="col-md-2 form-group">
     <label class="visually-hidden">Author</label>
-    <input type="text" class="form-control" name="author" placeholder="Author">
+    <input type="text" class="form-control" name="author" placeholder="Author" value="{{author}}">
   </div>
   <div class="col-md-2 form-group">
     <label class="visually-hidden">Language</label>
-    <input type="text" class="form-control" name="language" placeholder="Language">
+    <input type="text" class="form-control" name="language" placeholder="Language" value="{{language}}">
+  </div>
+  <div class="col-md-2 form-group">
+    <label class="visually-hidden">From date</label>
+    <input type="text" class="form-control" name="from_date" placeholder="From date YYYY/MM/DD" value="{{from_date}}">
+  </div>
+  <div class="col-md-2 form-group">
+    <label class="visually-hidden">To date</label>
+    <input type="text" class="form-control" name="to_date" placeholder="To date YYYY/MM/DD" value="{{to_date}}">
   </div>
   <div class="col-12">
     <button class="btn btn-secondary" type="submit">Filter</button>
@@ -56,14 +64,14 @@
 </table>
 <nav>
   <ul class="pagination justify-content-center">
-    <li class="page-item {% if page_number==1 %}disabled{% endif %}">
-      <a class="page-link" href="{{ url_for('general.books_list', page=page_number-1) }}" aria-label="Previous">
+    <li class="page-item {% if not previous_url %}disabled{% endif %}">
+      <a class="page-link" href="{{ previous_url }}" aria-label="Previous">
         <span aria-hidden="true">&laquo;</span>
       </a>
     </li>
     <li class="page-item disabled"><a class="page-link" href="#">{{page_number}} out of {{last_page}}</a></li>
-    <li class="page-item {% if page_number==last_page %}disabled{% endif %}">
-      <a class="page-link" href="{{ url_for('general.books_list', page=page_number+1) }}" aria-label="Next">
+    <li class="page-item {% if not next_url %}disabled{% endif %}">
+      <a class="page-link" href="{{ next_url }}" aria-label="Next">
         <span aria-hidden="true">&raquo;</span>
       </a>
     </li>

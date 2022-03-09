@@ -3,12 +3,11 @@ import math
 import os
 from http import HTTPStatus
 
-import flask
 from flask import Blueprint, request, render_template, redirect, url_for, flash
 
 from app import db
 from app.models import Book, Author
-from app.utils import chunks, get_google_data
+from app.utils import chunks, get_google_data, build_query
 
 blueprint = Blueprint("general", __name__)
 logging.basicConfig(level=logging.DEBUG)
@@ -30,24 +29,40 @@ def index():
 
 @blueprint.route("/books", methods=["GET"])
 def books_list():
-    title = request.args.get("title")
-    author = request.args.get("title")
-    language = request.args.get("language")
-    from_date = request.args.get("from_date")
-    to_date = request.args.get("to_date")
     page = request.args.get("page", 1, int)
-    books = Book.query.paginate(page=page, per_page=20)
-    logging.info(books.pages)
+    query_string = dict(request.args)
+    query_string.pop("page", None)
+    builder = build_query(query_string)
+    if builder is None:
+        return "Bad date format", HTTPStatus.UNAUTHORIZED
+    books = builder.paginate(page=page, per_page=20)
     authors_str_by_id = {}
     for book in books.items:
         authors_string = ", ".join([author.name for author in book.authors])
         authors_str_by_id[book.id] = authors_string
+    next_url = (
+        url_for("general.books_list", page=books.next_num, **query_string)
+        if books.has_next
+        else None
+    )
+    previous_url = (
+        url_for("general.books_list", page=books.prev_num, **query_string)
+        if books.has_prev
+        else None
+    )
     return render_template(
         "books_list.html",
         books=books,
         authors_by_id=authors_str_by_id,
         page_number=page,
         last_page=books.pages,
+        author=request.args.get("author", ""),
+        language=request.args.get("language", ""),
+        title=request.args.get("title", ""),
+        from_date=request.args.get("from_date", ""),
+        to_date=request.args.get("to_date", ""),
+        next_url=next_url,
+        previous_url=previous_url,
     )
 
 
