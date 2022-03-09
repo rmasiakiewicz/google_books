@@ -43,7 +43,7 @@
   <tbody>
     {% for book in books.items %}
     <tr>
-      <td>{{ book.gid }}</td>
+      <td><a target="_blank" href="{{  url_for('general.edit_book', book_id=book.id)  }}">{{ book.gid }}</a></td>
       <td>{{ book.title }}</td>
       <td>{{ authors_by_id.get(book.id) }}</td>
       <td>{{ book.publication_date.strftime("%Y/%m/%d") if book.publication_date else "" }}</td>
