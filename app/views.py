@@ -78,7 +78,7 @@ def edit_book(book_id):
     form = BookForm()
     book = Book.query.filter(Book.id == book_id).one_or_none()
     if not book:
-        return 'Bad request', HTTPStatus.BAD_REQUEST
+        return "Bad request", HTTPStatus.BAD_REQUEST
     form.gid.data = book.gid
     form.title.data = book.title
     form.authors.data = ", ".join([author.name for author in book.authors])
@@ -91,7 +91,7 @@ def edit_book(book_id):
     if request.method == "GET":
         return render_template("edit_book.html", form=form, book_id=book_id)
     if not form.validate_on_submit():
-        flash("Something went wrong", 'danger')
+        flash("Something went wrong", "danger")
         return render_template("edit_book.html", form=form, book_id=book_id)
     new_gid = request.form.get("gid")
     if Book.query.filter(Book.gid == new_gid).one_or_none() is not None and new_gid != book.gid:
@@ -99,7 +99,11 @@ def edit_book(book_id):
         return render_template("edit_book.html", form=form, book_id=book_id)
     book.gid = new_gid
     book.title = request.form.get("title")
-    book.publication_date = datetime.strptime(request.form.get("publication_date"), "%Y/%m/%d") if request.form.get("publication_date") else None
+    book.publication_date = (
+        datetime.strptime(request.form.get("publication_date"), "%Y/%m/%d")
+        if request.form.get("publication_date")
+        else None
+    )
     book.number_of_pages = request.form.get("number_of_pages")
     book.language = request.form.get("language")
     book.image_link = request.form.get("image_link")
@@ -113,7 +117,9 @@ def edit_book(book_id):
     old_authors_by_names = {author.name.lower(): author for author in book.authors}
     new_authors = [author.strip().lower() for author in authors_string.split(",")]
     missing_old_authors = [
-        old_authors_by_names.get(n) for n in list(set(old_authors_by_names.keys() - set(new_authors)))]
+        old_authors_by_names.get(n)
+        for n in list(set(old_authors_by_names.keys() - set(new_authors)))
+    ]
     for missing_author in missing_old_authors:
         book.authors.remove(missing_author)
     for author in authors_string.split(","):

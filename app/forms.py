@@ -13,4 +13,4 @@ class BookForm(FlaskForm):
     isbn_10 = StringField("ISBN 10", validators=[Length(min=10, max=10)])
     isbn_13 = StringField("ISBN 13", validators=[Length(min=13, max=13)])
     authors = StringField('Authors ( separated by "," )')
-    submit = SubmitField('Save')
+    submit = SubmitField("Save")
