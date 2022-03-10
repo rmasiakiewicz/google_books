@@ -7,7 +7,7 @@ class Config:
 
 
 class TestingConfig(Config):
-    SQLALCHEMY_DATABASE_URI = ""
+    SQLALCHEMY_DATABASE_URI = None
     TESTING = True
     TRAP_BAD_REQUEST_ERRORS = True
     WTF_CSRF_ENABLED = False
