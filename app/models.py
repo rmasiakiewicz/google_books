@@ -1,9 +1,34 @@
+import datetime
+from dataclasses import dataclass
+from typing import List, Optional
+
 from sqlalchemy.orm import relationship
 
 from app import db
 
 
+@dataclass(init=False)
+class Author(db.Model):
+    name: str
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False, unique=True)
+
+    books = relationship("Book", secondary="book_author", back_populates="authors")
+
+
+@dataclass(init=False)
 class Book(db.Model):
+    gid: int
+    title: str
+    publication_date: Optional[datetime.datetime]
+    number_of_pages: Optional[int]
+    language: str
+    image_link: Optional[str]
+    isbn_10: Optional[str]
+    isbn_13: Optional[str]
+    authors: Optional[List[Author]]
+
     id = db.Column(db.Integer, primary_key=True)
     gid = db.Column(db.String(50), nullable=False, unique=True)
     title = db.Column(db.String(300), nullable=False)
@@ -15,13 +40,6 @@ class Book(db.Model):
     isbn_13 = db.Column(db.String(13), nullable=True, unique=True)
 
     authors = relationship("Author", secondary="book_author", back_populates="books")
-
-
-class Author(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False, unique=True)
-
-    books = relationship("Book", secondary="book_author", back_populates="authors")
 
 
 book_author = db.Table(

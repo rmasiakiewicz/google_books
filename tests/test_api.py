@@ -3,7 +3,7 @@ import unittest
 from app import create_app, db
 
 
-class ApiTestCase(unittest.TestCase):
+class AppTestCase(unittest.TestCase):
     def setUp(self) -> None:
         self.app = create_app("testing")
         self.app_context = self.app.app_context()
@@ -16,10 +16,26 @@ class ApiTestCase(unittest.TestCase):
         db.drop_all()
         self.app_context.pop()
 
-    def test_import_books(self):
-        response = self.client.post("/books/import", data={"q": "tolkien"})
-        self.assertEqual(response.status_code, 302)
-
-    def test_books_list(self):
-        response = self.client.get("/books")
+    def test_api_response_no_query_strings(self):
+        response = self.client.get("/v1/books")
         self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.is_json)
+        self.assertFalse(response.json["error"])
+
+    def test_api_response_with_allowed_query_strings(self):
+        response = self.client.get("/v1/books?title=a&author=b&&language=c&from_date=2000-10-10&to_date=2001-10-10")
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.is_json)
+        self.assertFalse(response.json["error"])
+
+    def test_api_response_with_not_allowed_query_string(self):
+        response = self.client.get("/v1/books?abc=bcd")
+        self.assertEqual(response.status_code, 401)
+        self.assertTrue(response.is_json)
+        self.assertTrue(response.json["error"])
+
+    def test_api_response_bad_date_format(self):
+        response = self.client.get("/v1/books?from_date=2000/10/10")
+        self.assertEqual(response.status_code, 400)
+        self.assertTrue(response.is_json)
+        self.assertTrue(response.json["error"])

@@ -20,7 +20,9 @@ def create_app(config_type="production"):
     migrate.init_app(app, db)
 
     from app.views import blueprint
+    from app.api_views import api_blueprint
 
     app.register_blueprint(blueprint)
+    app.register_blueprint(api_blueprint)
 
     return app

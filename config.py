@@ -13,6 +13,7 @@ class TestingConfig(Config):
     )
     TESTING = True
     TRAP_BAD_REQUEST_ERRORS = True
+    WTF_CSRF_ENABLED = False
 
 
 class ProductionConfig(Config):

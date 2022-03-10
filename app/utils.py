@@ -3,9 +3,11 @@ import json
 import re
 import urllib.parse
 from datetime import datetime
-from typing import List, Tuple, Optional, Generator
+from typing import List, Tuple, Generator, Optional
 
 import requests
+import sqlalchemy
+from flask_sqlalchemy import SQLAlchemy
 
 from app.models import Author, Book
 
@@ -23,7 +25,7 @@ def chunks(l: list, n: int) -> Generator:
 
 def get_google_data(
     query: str, start_index: int, imported_gid: List[str], authors_by_name: dict
-) -> Tuple[List[Optional[Book]], List[Optional[Author]], dict, int]:
+) -> Tuple[List[Book], List[Author], dict, int]:
     google_response = requests.get(
         "https://www.googleapis.com/books/v1/volumes?q={}&maxResults=40&startIndex={}".format(
             urllib.parse.quote_plus(query), start_index
@@ -37,8 +39,7 @@ def get_google_data(
 
 
 def parse_google_json(
-    google_json: dict, imported_gid: List[str], authors_by_name: dict
-) -> Tuple[List[Optional[Book]], List[Optional[Author]], dict]:
+    google_json: dict, imported_gid: List[str], authors_by_name: dict) -> Tuple[List[Book], List[Author], dict]:
     new_books = []
     new_authors = []
     book_authors_by_gid = {}
@@ -96,7 +97,7 @@ def parse_google_json(
     return new_books, new_authors, book_authors_by_gid
 
 
-def build_query(query_dict):
+def build_query(query_dict: dict, api_request=False):
     allowed_parameters = ["title", "author", "language", "from_date", "to_date"]
     builder = Book.query
     for key in query_dict:
@@ -111,13 +112,13 @@ def build_query(query_dict):
             )
             continue
         if key == "from_date":
-            from_date = check_date(value)
+            from_date = check_date(value, api_request)
             if from_date is None:
                 return None
             builder = builder.filter(Book.publication_date >= from_date)
             continue
         if key == "to_date":
-            to_date = check_date(value)
+            to_date = check_date(value, api_request)
             if to_date is None:
                 return None
             builder = builder.filter(Book.publication_date <= to_date)
@@ -126,10 +127,36 @@ def build_query(query_dict):
     return builder
 
 
-def check_date(raw_date: str) -> Optional[datetime.date]:
-    if re.search(r"^\d{4}/\d{1,2}/\d{1,2}$", raw_date) is None:
+def check_date(raw_date: str, api_request=False) -> datetime.date:
+    regex = r"^\d{4}/\d{1,2}/\d{1,2}$"
+    date_format = "%Y/%m/%d"
+    if api_request:
+        regex = r"^\d{4}-\d{1,2}-\d{1,2}$"
+        date_format = "%Y-%m-%d"
+    if re.search(regex, raw_date) is None:
         return None
     try:
-        return datetime.strptime(raw_date, "%Y/%m/%d")
+        return datetime.strptime(raw_date, date_format)
     except ValueError:
         return None
+
+
+def get_book_authors_from_form(authors_string: str, db: SQLAlchemy) -> List[Author]:
+    form_authors_by_lower_name = {author.strip().lower(): author.strip() for author in authors_string.split(",")}
+    db_authors_by_lower_name = {
+        author.name.lower(): author
+        for author in Author.query.filter(sqlalchemy.func.lower(Author.name).in_(form_authors_by_lower_name.keys()))
+    }
+    authors = []
+    for key, value in form_authors_by_lower_name.items():
+        author = db_authors_by_lower_name.get(key)
+        if author is None:
+            author = Author(name=value)
+            db.session.add(author)
+        authors.append(author)
+    db.session.commit()
+    return authors
+
+
+def none_if_empty(text: str) -> Optional[str]:
+    return None if text == "" else text
