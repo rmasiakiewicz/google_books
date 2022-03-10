@@ -18,7 +18,9 @@ class AppTestCase(unittest.TestCase):
         self.app_context.pop()
 
     def test_import_books(self):
-        response = self.client.post("/books/import", data={"q": "tolkien"}, follow_redirects=True)
+        response = self.client.post(
+            "/books/import", data={"q": "tolkien"}, follow_redirects=True
+        )
         self.assertEqual(response.status_code, 200)
         self.assertIn(b"New books have been imported", response.data)
 
@@ -29,7 +31,10 @@ class AppTestCase(unittest.TestCase):
 
     def test_add_new_book_no_authors(self):
         response = self.client.post(
-            "/book/add", data=dict(gid="12345", title="test book", language="pl", authors=""), follow_redirects=True)
+            "/book/add",
+            data=dict(gid="12345", title="test book", language="pl", authors=""),
+            follow_redirects=True,
+        )
         self.assertEqual(response.status_code, 200)
         self.assertIn(b"Book has been added", response.data)
 
@@ -38,23 +43,42 @@ class AppTestCase(unittest.TestCase):
         db.session.add(author)
         db.session.commit()
         response = self.client.post(
-            "/book/add", data=dict(gid="12345", title="test book", language="pl", authors="Jan Kowalski, Piotr Nowak"),
-            follow_redirects=True)
+            "/book/add",
+            data=dict(
+                gid="12345",
+                title="test book",
+                language="pl",
+                authors="Jan Kowalski, Piotr Nowak",
+            ),
+            follow_redirects=True,
+        )
         self.assertEqual(response.status_code, 200)
         self.assertIn(b"Book has been added", response.data)
 
     def test_add_new_book_missing_required_field_fail(self):
         response = self.client.post(
-            "/book/add", data=dict(gid="12345", language="pl", authors=""), follow_redirects=True)
+            "/book/add",
+            data=dict(gid="12345", language="pl", authors=""),
+            follow_redirects=True,
+        )
         self.assertEqual(response.status_code, 200)
         self.assertIn(b"Something went wrong", response.data)
 
     def test_add_another_book_with_same_gid_fail(self):
-        self.client.post("/book/add", data=dict(gid="12345", language="pl", title="book 1", authors=""), follow_redirects=True)
+        self.client.post(
+            "/book/add",
+            data=dict(gid="12345", language="pl", title="book 1", authors=""),
+            follow_redirects=True,
+        )
         response = self.client.post(
-            "/book/add", data=dict(gid="12345", language="pl", title="book 2", authors=""), follow_redirects=True)
+            "/book/add",
+            data=dict(gid="12345", language="pl", title="book 2", authors=""),
+            follow_redirects=True,
+        )
         self.assertEqual(response.status_code, 200)
-        self.assertIn(b"Selected gid is taken, please choose another one", response.data)
+        self.assertIn(
+            b"Selected gid is taken, please choose another one", response.data
+        )
 
     def test_edit_book_success(self):
         book = Book(gid="1234", title="book 1", language="pl")
@@ -63,8 +87,8 @@ class AppTestCase(unittest.TestCase):
         response = self.client.post(
             "/book/edit/{}".format(book.id),
             data=dict(gid=book.gid, title="book 2", language=book.language, authors=""),
-            follow_redirects=True)
+            follow_redirects=True,
+        )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(book.title, "book 2")
         self.assertIn(b"Book has been edited", response.data)
-

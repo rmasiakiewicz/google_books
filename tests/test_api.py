@@ -23,7 +23,9 @@ class AppTestCase(unittest.TestCase):
         self.assertFalse(response.json["error"])
 
     def test_api_response_with_allowed_query_strings(self):
-        response = self.client.get("/v1/books?title=a&author=b&&language=c&from_date=2000-10-10&to_date=2001-10-10")
+        response = self.client.get(
+            "/v1/books?title=a&author=b&&language=c&from_date=2000-10-10&to_date=2001-10-10"
+        )
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.is_json)
         self.assertFalse(response.json["error"])

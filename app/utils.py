@@ -39,7 +39,8 @@ def get_google_data(
 
 
 def parse_google_json(
-    google_json: dict, imported_gid: List[str], authors_by_name: dict) -> Tuple[List[Book], List[Author], dict]:
+    google_json: dict, imported_gid: List[str], authors_by_name: dict
+) -> Tuple[List[Book], List[Author], dict]:
     new_books = []
     new_authors = []
     book_authors_by_gid = {}
@@ -142,10 +143,14 @@ def check_date(raw_date: str, api_request=False) -> datetime.date:
 
 
 def get_book_authors_from_form(authors_string: str, db: SQLAlchemy) -> List[Author]:
-    form_authors_by_lower_name = {author.strip().lower(): author.strip() for author in authors_string.split(",")}
+    form_authors_by_lower_name = {
+        author.strip().lower(): author.strip() for author in authors_string.split(",")
+    }
     db_authors_by_lower_name = {
         author.name.lower(): author
-        for author in Author.query.filter(sqlalchemy.func.lower(Author.name).in_(form_authors_by_lower_name.keys()))
+        for author in Author.query.filter(
+            sqlalchemy.func.lower(Author.name).in_(form_authors_by_lower_name.keys())
+        )
     }
     authors = []
     for key, value in form_authors_by_lower_name.items():

@@ -6,7 +6,13 @@ from flask import Blueprint, request, render_template, redirect, url_for, flash
 from app import db
 from app.forms import BookForm
 from app.models import Book, Author
-from app.utils import chunks, get_google_data, build_query, get_book_authors_from_form, none_if_empty
+from app.utils import (
+    chunks,
+    get_google_data,
+    build_query,
+    get_book_authors_from_form,
+    none_if_empty,
+)
 
 blueprint = Blueprint("general", __name__)
 
@@ -109,7 +115,9 @@ def edit_book(book_id):
         form.gid.data = book.gid
         form.title.data = book.title
         form.authors.data = ", ".join([author.name for author in book.authors])
-        form.publication_date.data = book.publication_date if book.publication_date else None
+        form.publication_date.data = (
+            book.publication_date if book.publication_date else None
+        )
         form.number_of_pages.data = book.number_of_pages
         form.language.data = book.language
         form.image_link.data = book.image_link
