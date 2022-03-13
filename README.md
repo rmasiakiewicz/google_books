@@ -87,4 +87,4 @@ No need to provide yor own database. I put
 ## UNIT TESTS
 I just wrote some basic unit test.
 To perform tests first Update SQLALCHEMY_DATABASE_URI in config.py for TestConfig class with another postgress url
-adn then execute run_tests.py file
+and then execute run_tests.sh script from scripts directory
